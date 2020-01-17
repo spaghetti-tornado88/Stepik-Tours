@@ -3,17 +3,55 @@ from data import *
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def main_page():
-    return render_template('index.html', subtitle=subtitle, description=description, tours=tours)
+    '''
+    Роут для вывода основной страницы со всеми турами
 
-@app.route('/from/<direction>')
-def direction_page(direction):
-    return render_template('direction.html')
+    :return: готовый шаблон с переданными аргументами
 
-@app.route('/tours/<int:id>')
-def tour_page(id):
-    return render_template('tours.html', tour=tours.get(id), departures=departures)
+    '''
+    return render_template('index.html', subtitle=subtitle,
+                           description=description, tours=tours)
+
+
+@app.route('/from/<city>')
+def direction_page(city):
+    '''
+    Роут для вывода страницы туров, город отправления которых = "city"
+
+    tours_by_city - итоговый словарь всех туров, в которых город отправления = "city"
+    prices - список, хранящий в себе все "price" из списка туров по городу
+    nights - список, хранящий в себе все "nights" из списка туров по городу
+
+    :return: готовый шаблон с переданными аргументами
+
+    '''
+    tours_by_city = {}
+    prices = []
+    nights = []
+    for tour_id, tour in tours.items():
+        if tour.get('departure') == city:
+            tours_by_city[tour_id] = tour
+            prices.append(tour.get('price'))
+            nights.append(tour.get('nights'))
+    print(prices)
+    return render_template('direction.html', tours=tours_by_city,
+                           prices=prices, nights=nights,
+                           departure=departures.get(city))
+
+
+@app.route('/tours/<int:tour_id>')
+def tour_page(tour_id):
+    '''
+    Роут для вывода страницы с описанием тура
+
+    :return: готовый шаблон с переданными аргументами
+
+    '''
+    return render_template('tours.html', tour=tours.get(tour_id),
+                           departures=departures)
 
 
 app.run()
